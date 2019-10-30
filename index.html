@@ -22,9 +22,20 @@ async function bme280main() {
     await bme280.init();
     while (1) {
       var val = await bme280.readData();
-      temp.innerHTML = val.temperature;
-      pres.innerHTML = val.pressure;
-      humi.innerHTML = val.humidity;
+      var tmpMAX=33;//温度の上限値
+      var tmpMIN=20;//温度の下限値
+      //※tmpMAXからtmpMINまでの値を0から255までの値に変換しRGBのパラメータにする。以下pre, humに対しても同様
+      var tmpR=toHex(Math.floor((val.temperature-tmpMIN)*255/(tmpMAX-tmpMIN)));
+      var preMAX=1000;
+      var preMIN=950;
+      var preG=toHex(Math.floor((val.pressure-preMIN)*255/(preMAX-preMIN)));
+      var humMAX=100;
+      var humMIN=10;
+      var humB=toHex(Math.floor((val.humidity-humMIN)*255/(humMAX-humMIN)));
+      temp.innerHTML = val.temperature + " > " + tmpR;
+      pres.innerHTML = val.pressure + " > " + preG;
+      humi.innerHTML = val.humidity + " > " + humB;
+      setGlobalColor(tmpR,preG,humB);//RGBをLEDにセット
       await sleep(1000);
     }
   } catch (error) {
