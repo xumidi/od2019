@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width">
+  <title>NEOPIXEL</title>
+</head>
+<body>
+<script src="node_modules/@chirimen-raspi/polyfill/polyfill.js"></script>
+<script src="node_modules/@chirimen-raspi/chirimen-driver-i2c-neopixel-i2c/NEOPIXEL_I2C.js"></script>
+<script src="node_modules/@chirimen-raspi/chirimen-driver-i2c-bme280/BME280.js"></script>
+<script src="main.js" defer></script>
+<script>
+async function bme280main() {
+  try {
+    var temp = document.getElementById("temp");
+    var pres = document.getElementById("pres");
+    var humi = document.getElementById("humi");
+    var i2cAccess = await navigator.requestI2CAccess();
+    var port = i2cAccess.ports.get(1);
+    var bme280 = new BME280(port, 0x77);
+    await bme280.init();
+    while (1) {
+      var val = await bme280.readData();
+      temp.innerHTML = val.temperature;
+      pres.innerHTML = val.pressure;
+      humi.innerHTML = val.humidity;
+      await sleep(1000);
+    }
+  } catch (error) {
+    console.error("error", error);
+  }
+}
+window.onload=function(){bme280main();}
+ var r=0x0;
+ var g=0x0;
+ var b=0x0;
+ function toHex(v){
+  v=Number(v);
+  return '0x'+('0000'+v.toString(16)).substr(-2);
+ }
+ function setLight(l){
+  setGlobalColor(l,l,l);
+ }
+ function setLightRGB(){
+  setGlobalColor(toHex(document.getElementById("light_r").value),toHex(document.getElementById("light_g").value),toHex(document.getElementById("light_b").value));
+ }
+</script>
+<h1>NEOPIXEL</h1>
+<div>
+<input type="range" id="light" max="255" min="0" onmousemove="setLight(toHex(this.value))"><br><br><br>
+<input type="button" onclick="setGlobalColor(toHex(document.getElementById('light').value),0x00,0x00)" value="R"></input>
+<input type="button" onclick="setGlobalColor(0x00,toHex(document.getElementById('light').value),0x00)" value="G"></input>
+<input type="button" onclick="setGlobalColor(0x00,0x00,toHex(document.getElementById('light').value))" value="B"></input>
+<input type="button" onclick="setGlobalColor(0x00,0x00,0x00)" value="OFF"></input><br><br>
+R<input type="range" id="light_r" max="255" min="0" onmousemove="setLightRGB()"><br>
+G<input type="range" id="light_g" max="255" min="0" onmousemove="setLightRGB()"><br>
+B<input type="range" id="light_b" max="255" min="0" onmousemove="setLightRGB()"><br>
+<br>
+<!--
+<input type="button" onclick="setPattern0()" value="PATTERN0"></input>
+<input type="button" onclick="setPattern1()" value="PATTERN1"></input>
+<input type="button" onclick="setPattern2()" value="PATTERN2"></input>
+<input type="button" onclick="setPattern3()" value="PATTERN3"></input>
+-->
+</div>
+    <table>
+      <tr>
+        <td>temperature</td>
+        <td id="temp"></td>
+      </tr>
+      <tr>
+        <td>pressure</td>
+        <td id="pres"></td>
+      </tr>
+      <tr>
+        <td>humidity</td>
+        <td id="humi"></td>
+      </tr>
+</body>
+</html>
